@@ -1,0 +1,64 @@
+version: v2beta1
+name: dragula
+
+deployments:
+  dragula:
+    helm:
+      chart:
+        name: component-chart
+        repo: https://charts.devspace.sh
+      values:
+        containers:
+          - image: ghcr.io/loft-sh/devspace-containers/python:3-alpine
+        service:
+          ports:
+            - port: 3000
+  pgvector:
+    helm:
+      chart:
+        name: component-chart
+        repo: https://charts.devspace.sh
+      values:
+        containers:
+          - image: ankane/pgvector
+            env:
+              - name: POSTGRES_PASSWORD
+                value: "password"
+        service:
+          ports:
+            - port: 5432
+
+hooks:
+  - name: 'Seeding database'
+    command: |-
+      devspace run upload_pgvector_seed
+      devspace run load_vectors
+    events: ['after:deploy:pgvector']
+
+dev:
+  dragula:
+    imageSelector: ghcr.io/loft-sh/devspace-containers/python:3-alpine
+    sync:
+      - path: ./
+        excludePaths:
+        - .venv/
+    terminal:
+      command: ./devspace_start.sh
+
+commands:
+  dump:
+    command: |-
+      command -v gzip >/dev/null 2>&1 || { echo "gzip not found, exiting."; exit 1; }
+      echo 'Dumping contents of pgvector.'
+      devspace enter --image-selector=ankane/pgvector -- /bin/bash -c 'mkdir -p data && pg_dump -U postgres -d postgres > data/pg_embeddings.sql'
+      devspace sync --path=data:data --image-selector ankane/pgvector --no-watch --download-only --silent
+      rm -f data/pg_embeddings.sql.gz
+      gzip data/pg_embeddings.sql
+  load_vectors:
+    command: |-
+      echo 'Loading data into pgvector'
+      devspace enter --image-selector=ankane/pgvector -- /bin/bash -c 'gunzip data/pg_embeddings.sql.gz & psql -U postgres -d postgres -f data/pg_embeddings.sql'
+  upload_pgvector_seed:
+    command: |-
+      echo 'Transferring database seed to pgvector container'
+      devspace sync --path=data/pg_embeddings.sql.gz:data/pg_embeddings.sql.gz --image-selector ankane/pgvector --no-watch --upload-only --silent

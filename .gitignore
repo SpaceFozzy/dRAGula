@@ -1,0 +1,4 @@
+__pycache__/
+.devspace/
+.venv/
+text/
