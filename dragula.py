@@ -112,7 +112,7 @@ class Dragula:
         response_query_chain = (
             {"context": passage_retriever, "question": RunnablePassthrough()}
             | response_query_prompt
-            | ChatOpenAI(model_name="gpt-4")
+            | ChatOpenAI(model_name="gpt-4-1106-preview")
             | StrOutputParser()
         )
 
