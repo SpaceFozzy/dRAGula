@@ -19,9 +19,9 @@ The project comes with a dataset of passages from the novel that are chunked and
 
 When you provide a prompt about the novel, the following happens:
 
-1. ChatGPT is asked to consider your prompt and generate queries for the vector store to find relevant passages. ChatGPT produces multiple queries to allow for a diversity in the supporting passages.
-2. The multiple queries produced by ChatGPT are fed into PGVector to find relevant passages. Results are reduced to a unique set.
-3. The relevant passages are passed as context to ChatGPT along with the original question. ChatGPT is prompted to refer to the passages in its response.
+1. GPT-4 is asked to consider your prompt and generate queries for the vector store to find relevant passages. GPT-4 produces multiple queries to allow for a diversity in the supporting passages.
+2. The multiple queries produced by GPT-4 are fed into PGVector to find relevant passages. Results are reduced to a unique set.
+3. The relevant passages are passed as context to GPT-4 along with the original question. GPT-4 is prompted to refer to the passages in its response.
 
 
 ## Re-Ingesting The Text
@@ -30,4 +30,4 @@ If you want to re-ingest the text to experiment with different chunk sizes and o
 
 `CHUNK_SIZE=2000 CHUNK_OVERLAP=100 python dragula.py ingest`
 
-Smaller chunks will result in better matching, but less passage context provided to ChatGPT. 
+Smaller chunks will result in better matching, but less passage context provided to GPT-4. 
